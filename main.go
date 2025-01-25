@@ -8,59 +8,68 @@ import (
 )
 
 func execute(srcCode string) {
-	memory := make([]int, 30000)
+	memory := make([]int, 1000000)
 	srcCounter := 0
 	dataPointer := 0
 	// Store parathensis position
 	stk := stack.New[int]()
-	var err error
 	for srcCounter < len(srcCode) {
 		instruction := rune(srcCode[srcCounter])
 		switch instruction {
 		case '+':
-			memory[dataPointer] += 1
-			srcCounter++
+			memory[dataPointer]++
 		case '-':
-			memory[dataPointer] -= 1
-			srcCounter++
+			memory[dataPointer]--
 		case '>':
 			dataPointer++
-			srcCounter++
 		case '<':
 			if dataPointer > 0 {
 				dataPointer--
+			} else {
+				panic("invalid <")
 			}
-			srcCounter++
 		case '.':
 			data := rune(memory[dataPointer])
 			fmt.Print(string(data))
-			srcCounter++
 		case ',':
 			input := int('i')
 			memory[dataPointer] = input
-			srcCounter++
 			// TODO
 		case '[':
 			if memory[dataPointer] > 0 {
 				stk.Push(srcCounter)
-				srcCounter++
 			} else {
-				for srcCode[srcCounter] != ']' {
+				dept := 1
+				for dept > 0 {
 					srcCounter++
+					if srcCounter == len(srcCode) {
+						panic("Unmatched [")
+					}
+
+					if srcCode[srcCounter] == ']' {
+						dept--
+					}
+					if srcCode[srcCounter] == '[' {
+						dept++
+					}
 				}
-				srcCounter++
 			}
 		case ']':
-			if stk.IsEmpty() {
-				panic("Stack is empty")
+			if memory[dataPointer] > 0 {
+				lastMatching, err := stk.Peek()
+				if err != nil {
+					panic(err)
+				}
+				srcCounter = lastMatching
+			} else {
+				_, err := stk.Pop()
+				if err != nil {
+					panic(err)
+				}
 			}
-			srcCounter, err = stk.Pop()
-			if err != nil {
-				panic(err)
-			}
-		default:
-			srcCounter++
 		}
+		srcCounter++
+
 	}
 }
 
@@ -74,6 +83,6 @@ func main() {
 	execute(string(contentRaw))
 }
 
-// func isValidChar(c rune) bool {
-// 	return slices.Contains([]rune{'+', '-', '>', '<', '.', '[', ']', ','}, c)
-// }
+//	func isValidChar(c rune) bool {
+//		return slices.Contains([]rune{'+', '-', '>', '<', '.', '[', ']', ','}, c)
+//	}
