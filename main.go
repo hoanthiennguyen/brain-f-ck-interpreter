@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"slices"
 
 	"github.com/hoanthiennguyen/go-stack"
 )
@@ -73,6 +74,18 @@ func execute(srcCode string) {
 	}
 }
 
+func filterComment(srcCode string) string {
+	result := []rune{}
+	validChars := []rune{'+', '-', '>', '<', '.', '[', ']', ','}
+	for _, c := range srcCode {
+		if slices.Contains(validChars, c) {
+			result = append(result, c)
+		}
+	}
+
+	return string(result)
+}
+
 func main() {
 	fileName := os.Args[1]
 	contentRaw, err := os.ReadFile(fileName)
@@ -80,7 +93,8 @@ func main() {
 		panic(err)
 	}
 
-	execute(string(contentRaw))
+	content := filterComment(string(contentRaw))
+	execute(content)
 }
 
 //	func isValidChar(c rune) bool {
