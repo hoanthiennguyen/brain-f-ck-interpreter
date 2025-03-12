@@ -152,7 +152,7 @@ func compile(fileName string) {
 	serializeString = serializeString + "\n" + srcCode
 
 	nameArr := strings.Split(fileName, ".")
-	fileNameCompiled := nameArr[0] + ".cpl"
+	fileNameCompiled := nameArr[0] + ".bfc"
 	if err := os.WriteFile(fileNameCompiled, []byte(serializeString), os.ModePerm); err != nil {
 		panic(err)
 	}
