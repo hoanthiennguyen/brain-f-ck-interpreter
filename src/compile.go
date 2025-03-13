@@ -1,4 +1,4 @@
-package main
+package brainfuck
 
 import (
 	"fmt"
@@ -47,7 +47,7 @@ func buildClosingBracketMap(srcCode string) [][2]int {
 	return closingBracket
 }
 
-func compile(fileName string) {
+func Compile(fileName string) {
 	contentRaw, err := os.ReadFile(fileName)
 	if err != nil {
 		panic(err)

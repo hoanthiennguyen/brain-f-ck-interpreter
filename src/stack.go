@@ -1,4 +1,4 @@
-package main
+package brainfuck
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ type stackImpl[T any] struct {
 	inner []T
 }
 
-func New[T any]() Stack[T] {
+func NewStack[T any]() Stack[T] {
 	return &stackImpl[T]{}
 }
 

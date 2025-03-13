@@ -1,15 +1,13 @@
-package main
+package brainfuck
 
 import (
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/hoanthiennguyen/go-stack"
 )
 
-func run(compiledFileName string) {
+func Run(compiledFileName string) {
 	contentRaw, err := os.ReadFile(compiledFileName)
 	if err != nil {
 		panic(err)
@@ -35,7 +33,7 @@ func execute(srcCode string, correspondingClosingBracket map[int]int) {
 	srcCounter := 0
 	dataPointer := 0
 	// Store parathensis position
-	stk := stack.New[int]()
+	stk := NewStack[int]()
 	for srcCounter < len(srcCode) {
 		instruction := rune(srcCode[srcCounter])
 		switch instruction {
