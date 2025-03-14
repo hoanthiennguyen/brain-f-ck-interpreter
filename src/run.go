@@ -1,10 +1,10 @@
 package brainfuck
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
 )
 
 func Run(compiledFileName string) {
@@ -13,67 +13,47 @@ func Run(compiledFileName string) {
 		panic(err)
 	}
 
-	arr := strings.Split(string(contentRaw), "\n")
-	firstLine := arr[0]
-	srcCode := arr[1]
+	buffer := *bytes.NewBuffer(contentRaw)
+	decoder := gob.NewDecoder(&buffer)
 
-	arr = strings.Split(firstLine, ",")
-	closingBracket := make(map[int]int)
-	for index := 0; index < len(arr); index += 2 {
-		open, _ := strconv.Atoi(arr[index])
-		closing, _ := strconv.Atoi(arr[index+1])
-		closingBracket[open] = closing
+	instructions := []*Instruction{}
+	if err := decoder.Decode(&instructions); err != nil {
+		panic(err)
 	}
 
-	execute(srcCode, closingBracket)
+	execute(instructions)
 }
 
-func execute(srcCode string, correspondingClosingBracket map[int]int) {
-	memory := make([]int, 1000000)
+func execute(arr []*Instruction) {
+	memory := make([]int, 100000)
 	srcCounter := 0
 	dataPointer := 0
 	// Store parathensis position
-	stk := NewStack[int]()
-	for srcCounter < len(srcCode) {
-		instruction := rune(srcCode[srcCounter])
-		switch instruction {
-		case '+':
+	for srcCounter < len(arr) {
+		instruction := arr[srcCounter]
+		switch instruction.Op {
+		case OpIncr:
 			memory[dataPointer]++
-		case '-':
+		case OpDecr:
 			memory[dataPointer]--
-		case '>':
+		case OpMoveRight:
 			dataPointer++
-		case '<':
-			if dataPointer > 0 {
-				dataPointer--
-			} else {
-				panic("invalid <")
-			}
-		case '.':
+		case OpMoveLeft:
+			dataPointer--
+		case OpOutput:
 			data := rune(memory[dataPointer])
 			fmt.Print(string(data))
-		case ',':
+		case OpInput:
 			input := int('i')
 			memory[dataPointer] = input
 			// TODO
-		case '[':
-			if memory[dataPointer] > 0 {
-				stk.Push(srcCounter)
-			} else {
-				srcCounter = correspondingClosingBracket[srcCounter]
+		case OpBeginLoop:
+			if memory[dataPointer] == 0 {
+				srcCounter = instruction.Param
 			}
-		case ']':
+		case OpEndLoop:
 			if memory[dataPointer] > 0 {
-				lastMatching, err := stk.Peek()
-				if err != nil {
-					panic(err)
-				}
-				srcCounter = lastMatching
-			} else {
-				_, err := stk.Pop()
-				if err != nil {
-					panic(err)
-				}
+				srcCounter = instruction.Param
 			}
 		}
 		srcCounter++
