@@ -83,16 +83,11 @@ func getCompiledFileName(fileName string) string {
 
 func compileV2(srcCode string) []*Instruction {
 	srcCode = filterComment(string(srcCode))
-	matchBrackets := findMatchBrackets(srcCode)
-	openMap, closeMap := make(map[int]int), make(map[int]int)
-	for _, e := range matchBrackets {
-		openB, closeB := e[0], e[1]
-		openMap[closeB] = openB
-		closeMap[openB] = closeB
-	}
 
 	result := []*Instruction{}
-	for index, e := range srcCode {
+	var prevOp *Instruction
+	for index := 0; index < len(srcCode); index++ {
+		e := srcCode[index]
 		var in *Instruction
 		switch e {
 		case '+':
@@ -109,14 +104,47 @@ func compileV2(srcCode string) []*Instruction {
 			in = NewInstruction(OpInput)
 		case '[':
 			in = NewInstruction(OpBeginLoop)
-			in.Param = closeMap[index]
 		case ']':
 			in = NewInstruction(OpEndLoop)
-			in.Param = openMap[index]
 		}
 
-		result = append(result, in)
+		if index >= 1 {
+			if prevOp.Op == in.Op && prevOp.Op.CanStack() {
+				prevOp.Param++
+
+				// if this is the last operation, add to the result
+				if index == len(srcCode)-1 {
+					result = append(result, prevOp)
+				}
+			} else {
+				result = append(result, prevOp)
+				prevOp = in
+				// last operation need to be added
+				if index == len(srcCode)-1 {
+					result = append(result, in)
+				}
+			}
+		} else {
+			prevOp = in
+		}
+
 	}
+	buildMatchingBrackets(result)
 
 	return result
+}
+
+func buildMatchingBrackets(ins []*Instruction) {
+	stk := NewStack[*Instruction]()
+	for index, in := range ins {
+		switch in.Op {
+		case OpBeginLoop:
+			in.data = index
+			stk.Push(in)
+		case OpEndLoop:
+			begin, _ := stk.Pop()
+			begin.Param = index
+			in.Param = begin.data
+		}
+	}
 }

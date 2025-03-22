@@ -30,16 +30,16 @@ func execute(arr []*Instruction) {
 	dataPointer := 0
 	// Store parathensis position
 	for srcCounter < len(arr) {
-		instruction := arr[srcCounter]
-		switch instruction.Op {
+		in := arr[srcCounter]
+		switch in.Op {
 		case OpIncr:
-			memory[dataPointer]++
+			memory[dataPointer] += in.Param
 		case OpDecr:
-			memory[dataPointer]--
+			memory[dataPointer] -= in.Param
 		case OpMoveRight:
-			dataPointer++
+			dataPointer += in.Param
 		case OpMoveLeft:
-			dataPointer--
+			dataPointer -= in.Param
 		case OpOutput:
 			data := rune(memory[dataPointer])
 			fmt.Print(string(data))
@@ -49,11 +49,11 @@ func execute(arr []*Instruction) {
 			// TODO
 		case OpBeginLoop:
 			if memory[dataPointer] == 0 {
-				srcCounter = instruction.Param
+				srcCounter = in.Param
 			}
 		case OpEndLoop:
 			if memory[dataPointer] > 0 {
-				srcCounter = instruction.Param
+				srcCounter = in.Param
 			}
 		}
 		srcCounter++
