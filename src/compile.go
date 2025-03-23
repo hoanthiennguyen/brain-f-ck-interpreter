@@ -21,34 +21,6 @@ func filterComment(srcCode string) string {
 	return string(result)
 }
 
-func findMatchBrackets(srcCode string) [][2]int {
-	closingBracket := [][2]int{}
-	for i := 0; i < len(srcCode); i++ {
-		instruction := rune(srcCode[i])
-		if instruction == '[' {
-			tmp := i + 1
-			countMissingBracket := 1
-			for tmp < len(srcCode) {
-				if rune(srcCode[tmp]) == ']' {
-					countMissingBracket--
-					if countMissingBracket == 0 {
-						break
-					}
-
-				} else if rune(srcCode[tmp]) == '[' {
-					countMissingBracket++
-				}
-
-				tmp++
-			}
-
-			closingBracket = append(closingBracket, [2]int{i, tmp})
-		}
-	}
-
-	return closingBracket
-}
-
 func CompileV2(fileName string) {
 	contentRaw, err := os.ReadFile(fileName)
 	if err != nil {
